@@ -11,16 +11,19 @@ namespace IndividualProject
         public static void Main(string[] pArguments)
         {
             // This main function does the following:
-            // 1. Create an array with random numbers between 1-1000 (some numbers will be duplicated)
+            // 1. Create an array with random numbers between 1-1000 and sort
             // 2. Create one random number between 1-1000
-            // 3. Pass the array and number to the search function
-            // 4. The search function populates a binary search tree with the array
-            // 5. The search function does a binary search on the tree with the random number
-            // 6. This function will return found or not found based on the results
+            // 3. Pass the sorted array and number to the search function
+            // 4. Perform binary search on sorted array
+            // 5. This function will return found or not found based on the results
 
             int[]   randomNumberArray   = Program.RandomArrayGenerator(1000);
             int     randomNumber        = Program.RandomNumberGenerator(1000);
-            bool    result              = Program.FindNumber(randomNumber, randomNumberArray);
+            bool    result              = false;
+
+            Array.Sort(randomNumberArray);
+
+            result  = Program.FindNumber(randomNumber, randomNumberArray);
 
             Console.WriteLine("Results of Search: ");
             Console.WriteLine();
@@ -38,8 +41,8 @@ namespace IndividualProject
         public static int[] RandomArrayGenerator(int numberOfNumbers)
         {
             // Initialize output array and random number class
-            int[] result = new int[numberOfNumbers];
-            Random random = new Random();
+            int[]   result = new int[numberOfNumbers];
+            Random  random = new Random();
 
             // Get each random number and store in array
             for (int i = 0; i < numberOfNumbers; i++)
@@ -55,116 +58,34 @@ namespace IndividualProject
             return random.Next(1, maxNumber);
         }
 
-        public static bool FindNumber(int numberToFind, int[] listOfNumbers)
+        public static bool FindNumber(int numberToFind, int[] sortedArray)
         {
-            Node        result      = null;
-            BinaryTree  binaryTree  = new BinaryTree();
+            int minNum      = 0;
+            int maxNum      = sortedArray.Length - 1;
+            bool result     = false;
 
-            // Create and populate tree
-            foreach (int value in listOfNumbers)
-                binaryTree.Add(value);
+            // Following demonstrates the use of a binary search on a sorted array
+            // The steps are:
+            // 1. Find the middle, if that matches return true and break
+            // 2. If not, divide the array in half (number is greater take top half otherwise bottom half)
+            // 3. Repeat steps until there is a match
+            // 4. If no match is found return false
 
-            // Search tree
-            result = binaryTree.Find(numberToFind, binaryTree.Root);
-
-            return result != null;
-        }
-    }
-
-    public class BinaryTree
-    {
-        private Node m_root;
-
-        public BinaryTree()
-        {
-        }
-
-        public Node Root
-        {
-            get { return this.m_root; }
-            set { this.m_root = value; }
-        }
-
-        public bool Add(int value)
-        {
-            Node before = null;
-            Node after  = this.Root;
-
-            while (after != null)
+            while (minNum <= maxNum)
             {
-                // Check which direction the node would be in
-                before = after;
-                if (value < after.Data)
-                    after = after.Left;
-                else if (value > after.Data)
-                    after = after.Right;
-                else
+                int mid = (minNum + maxNum) / 2;
+
+                if (numberToFind == sortedArray[mid])
                 {
-                    // Same value
-                    return false;
+                    result = true;
+                    break;
                 }
-            }
-
-            Node newNode = new Node(value);
-
-            if (this.Root == null)
-                this.Root = newNode;
-            else
-            {
-                if (value < before.Data)
-                    before.Left = newNode;
+                else if (numberToFind < sortedArray[mid])
+                    maxNum = mid - 1;
                 else
-                    before.Right = newNode;
+                    minNum = mid + 1;
             }
-
-            return true;
-        }
-
-        public Node Find(int value, Node parent)
-        {
-            // Simple binary tree search traversal
-            if (parent != null)
-            {
-                if (value == parent.Data) return parent;
-                if (value < parent.Data)
-                    return Find(value, parent.Left);
-                else
-                    return Find(value, parent.Right);
-            }
-
-            return null;
-        }
-    }
-
-    public class Node
-    {
-        private Node m_right;
-        private Node m_left;
-        private int m_data;
-
-        public Node(int data)
-        {
-            this.m_data = data;
-            this.m_right = null;
-            this.m_left = null;
-        }
-
-        public Node Right
-        {
-            get { return this.m_right; }
-            set { this.m_right = value; }
-        }
-
-        public Node Left
-        {
-            get { return this.m_left; }
-            set { this.m_left = value; }
-        }
-
-        public int Data
-        {
-            get { return this.m_data; }
-            set { this.m_data = value; }
+            return result;
         }
     }
 }
